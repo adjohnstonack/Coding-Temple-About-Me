@@ -3,40 +3,42 @@ import csv
 def load_students(filepath):
     students = []
     try:
-        with open(filepath, newline="") as csvfile:
-            reader = csv.DictReader(csvfile)
+        with open(filepath, mode="r", newline="", encoding="utf-8") as file:
+            reader = csv.DictReader(file)
             for row in reader:
                 students.append(row)
     except FileNotFoundError:
-        print(f"Error: File not found at {filepath}")
+        print(f"Error: Could not find file at {filepath}")
         return []
     return students
 
 def calculate_average(grades):
     valid_grades = []
-
     for g in grades:
-        if g.strip() != "":
-            valid_grades.append(float(g))
+        if g.strip() !="":
+            try:
+                valid_grades.append(float(g))
+            except ValueError:
+                continue
+            if not valid_grades:
+                return None
 
-    if not valid_grades:
-        return None
-
-    avg = sum(valid_grades) / len(valid_grades)
-    return round(avg, 1)
-
+            avg = sum(valid_grades) / len(valid_grades)
+            return round(avg, 1)
+        
 def get_letter_grade(average):
     if average is None:
         return "N/A"
-    if average >= 90:
+    elif average >= 90:
         return "A"
-    if average >= 80:
+    elif average >= 80:
         return "B"
-    if average >= 70:
+    elif average >= 70:
         return "C"
-    if average >= 60:
+    elif average >= 60:
         return "D"
-    return "F"
+    else:
+        return "F"
 
 def generate_report(students):
     report = {
@@ -44,7 +46,7 @@ def generate_report(students):
         "class_average": None,
         "highest_average": None,
         "lowest_average": None,
-        "grade_distribution": {
+        "grade_distribution":{
             "A": 0,
             "B": 0,
             "C": 0,
@@ -54,9 +56,7 @@ def generate_report(students):
         },
         "students": []
     }
-
     averages = []
-
     for student in students:
         grades = [
             student["math"],
@@ -64,52 +64,57 @@ def generate_report(students):
             student["english"],
             student["history"]
         ]
-
         avg = calculate_average(grades)
         letter = get_letter_grade(avg)
 
         report["students"].append({
-            "name": student["student_name"],
+            "name" : student["student_name"],
             "average": avg,
-            "letter": letter
+            "grade" :letter
         })
 
         if avg is not None:
             averages.append(avg)
 
-        report["grade_distribution"][letter] += 1
+            report["grade_distribution"][letter] += 1
 
     if averages:
-        report["class_average"] = round(sum(averages) / len(averages), 1)
-        report["highest_average"] = max(averages)
+        report["class_average"] = round(sum(averages)/len(averages), 1),
+        report["highest_average"] = max(averages),
         report["lowest_average"] = min(averages)
 
     return report
-
+    
+    
 def write_report(report, filepath):
-    with open(filepath, "w") as f:
-        f.write("GRADE REPORT\n")
-        f.write("====================\n\n")
+        with open(filepath, "w") as f:
+            f.write("STUDENT GRADE REPORT\n")
+            f.write("====================\n\n")
 
-        f.write(f"Total students: {report['total_students']}\n")
-        f.write(f"Class average: {report['class_average']}\n")
-        f.write(f"Highest average: {report['highest_average']}\n")
-        f.write(f"Lowest average: {report['lowest_average']}\n\n")
+            f.write(f"Total Students: {report['total_students']}\n")
+            f.write(f"Class Average: {report['class_average']}\n")
+            f.write(f"Highest Average: {report['highest_average']}\n")
+            f.write(f"Lowest Average: {report['lowest_average']}\n\n")
 
-        f.write("Grade Distribution:\n")
-        for grade, count in report["grade_distribution"].items():
-            f.write(f"  {grade}: {count}\n")
+            f.write("Grade Distribution:\n")
+            for grade, count in report["grade_distribution"].items():
+             f.write(f"  {grade}: {count}\n")
 
-        f.write("\nIndividual Student Results:\n")
-        for r in report["students"]:
-            f.write(f"{r['name']:20}  {r['average']}  ({r['letter']})\n")
+            f.write("\nIndividual Student Results:\n")
+            f.write("---------------------------\n")
+
+            for student in report["students"]:
+             f.write(f"{student['name']}: {student['average']} ({student['grade']})\n")
+    
+
+
 # ============================================================
 # MAIN — do not modify
 # ============================================================
 
 def main():
     print("Loading student data...")
-    students = load_students("data/students.csv")
+    students = load_students("students.csv")
     print(f"Loaded {len(students)} students.")
 
     print("Generating report...")
