@@ -114,7 +114,7 @@ def write_report(report, filepath):
 
 def main():
     print("Loading student data...")
-    students = load_students("students.csv")
+    students = load_students("data/students.csv")
     print(f"Loaded {len(students)} students.")
 
     print("Generating report...")
